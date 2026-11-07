@@ -1,4 +1,4 @@
-const GEMINI_API_KEY = 'YOUR_GEMINI_KEY_HERE';
+const GEMINI_API_KEY = 'AQ.Ab8RN6J8hvph9Ujz1OlZFFHev1nF-0kgELFJGjXr-TaG0tiC1A';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
