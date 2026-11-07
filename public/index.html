@@ -453,9 +453,9 @@ async function runAI(){
   var bl=bnum<2000?'very low (under Rs.2000)':bnum<10000?'moderate (Rs.2000-10000)':bnum<50000?'high (Rs.10000-50000)':'very high (above Rs.50000)';
   var prompt='You are a mutual fund risk profile classifier for Groww. Classify each filter option as match, partial, or no-match based on the full user profile below. Reason across ALL inputs together. Each explanation must reference specific profile details.\n\nUSER PROFILE:\n- Age: '+profile.age+'\n- Occupation: '+profile.occupation+'\n- Income stability: '+profile.stability+'\n- Monthly budget: '+bl+'\n- Investment horizon: '+profile.horizon+'\n- Reaction to 20% portfolio drop: '+profile.reaction+'\n- Primary goal: '+profile.goal+'\n- Experience: '+profile.experience+'\n- Notes: '+(profile.notes||'none')+'\n\nReturn ONLY valid JSON:\n{"risk":{"Low":{"status":"match|partial|no-match","explanation":"max 25 words specific to this user"},"Moderately Low":{"status":"...","explanation":"..."},"Moderate":{"status":"...","explanation":"..."},"Moderately High":{"status":"...","explanation":"..."},"High":{"status":"...","explanation":"..."},"Very High":{"status":"...","explanation":"..."}},"categories":{"Equity":{"status":"...","explanation":"..."},"Debt":{"status":"...","explanation":"..."},"Hybrid":{"status":"...","explanation":"..."},"Commodities":{"status":"...","explanation":"..."}},"quickFilters":{"Index only":{"status":"...","explanation":"..."},"Flexi Cap":{"status":"...","explanation":"..."},"Sectoral":{"status":"...","explanation":"..."},"4+ Star":{"status":"...","explanation":"..."},"Large Cap":{"status":"...","explanation":"..."}},"profileSummary":"one plain sentence"}\n\nIMPORTANT: Each section (risk, categories, quickFilters) must have at least one match, at least one partial, and at least one no-match. Never classify everything the same way.';
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
-    var data=await res.json();
-    var txt=data.content&&data.content[0]?data.content[0].text:'';
+    var res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
+var data=await res.json();
+var txt=data.text||'';
     var m=txt.match(/\{[\s\S]*\}/);
     clf=m?JSON.parse(m[0]):fallback();
   }catch(e){clf=fallback();}
@@ -624,9 +624,10 @@ async function fetchTtp(opt,st){
   var key=opt+'-'+st;
   if(ttpCache[key]){document.getElementById('ttpBd').textContent=ttpCache[key];return;}
   try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:'Explain in one sentence (max 25 words) why the "'+opt+'" mutual fund filter '+( st==='match'?'matches':st==='partial'?'partially matches':'does not match')+' a user with: horizon='+profile.horizon+', reaction='+profile.reaction+', goal='+profile.goal+', experience='+profile.experience+'. No advice, no return predictions.'}]})});
-    var data=await res.json();
-    var txt=data.content&&data.content[0]?data.content[0].text.trim():'';
+   var tooltipPrompt='Explain in one sentence (max 25 words) why the "'+opt+'" mutual fund filter '+(st==='match'?'matches':st==='partial'?'partially matches':'does not match')+' a user with: horizon='+profile.horizon+', reaction='+profile.reaction+', goal='+profile.goal+', experience='+profile.experience+'. No advice, no return predictions.';
+var res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:tooltipPrompt})});
+var data=await res.json();
+var txt=data.text||'';
     var bad=['you should','consider','invest in','recommend','will return','guaranteed'].some(function(t){return txt.toLowerCase().includes(t);});
     var wc=txt.split(/\s+/).length;
     var out=(!bad&&wc>=5&&wc<=40)?txt:'Your combined profile inputs were used to determine this match level.';
