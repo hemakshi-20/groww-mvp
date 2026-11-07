@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Groww Risk Profile Matching Engine</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0f1117;--surface:#1a1d27;--surface2:#22263a;--border:#2a2d3e;
+  --text:#e8eaf0;--text2:#8b90a7;--green:#00c48c;--red:#f45c5c;
+  --groww:#00d09c;--match:#00c48c;--partial:#f5a623;--nomatch:#f45c5c;
+  --mbg:rgba(0,196,140,0.12);--pbg:rgba(245,166,35,0.12);--nbg:rgba(244,92,92,0.12);
+}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif;display:flex;justify-content:center;min-height:100vh}
+.phone{width:100%;max-width:400px;background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
+
+/* SCREENS - only one visible at a time */
+.screen{display:none;flex-direction:column;min-height:100vh}
+.screen.active{display:flex}
+
+.topbar{background:var(--bg);padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo{font-size:20px;font-weight:800;color:var(--groww)}
+
+/* SURVEY STEPS - only one visible at a time */
+.qstep{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:20px 16px 8px}
+.qstep.active{display:flex}
+
+.prog-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:6px}
+.prog-fill{height:100%;background:var(--groww);border-radius:2px;transition:width 0.3s}
+.prog-label{font-size:11px;color:var(--text2);margin-bottom:20px}
+.q-label{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.q-text{font-size:17px;font-weight:600;margin-bottom:16px;line-height:1.4}
+.q-hint{font-size:12px;color:var(--text2);line-height:1.5;padding:10px 12px;background:var(--surface);border-radius:8px;border-left:3px solid var(--groww);margin-bottom:16px}
+.opt{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;margin-bottom:9px;cursor:pointer;font-size:14px;font-weight:500;display:block;width:100%;text-align:left;color:var(--text);font-family:inherit;line-height:1.3}
+.opt:active{opacity:0.8}
+.opt.selected{border-color:var(--groww);background:rgba(0,208,156,0.08);color:var(--groww)}
+.text-input{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:13px 16px;font-size:15px;color:var(--text);width:100%;outline:none;margin-top:8px;font-family:inherit}
+.text-input:focus{border-color:var(--groww)}
+.field-label{font-size:12px;color:var(--text2);margin-bottom:4px;margin-top:16px}
+.nav-row{padding:16px;display:flex;gap:10px;border-top:1px solid var(--border);background:var(--bg);flex-shrink:0}
+.btn{flex:1;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:var(--groww);color:#0f1117}
+.btn-primary:disabled{opacity:0.4;cursor:default}
+.btn-sec{background:var(--surface);color:var(--text)}
+
+/* LOADING */
+.loading-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;text-align:center}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--groww);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* EXPLORE */
+.explore-topbar{background:var(--surface);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.explore-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.etab{flex:1;padding:12px;text-align:center;font-size:13px;font-weight:500;color:var(--text2)}
+.etab.active{color:var(--groww);border-bottom:2px solid var(--groww)}
+.explore-body{flex:1;overflow-y:auto;padding:16px;position:relative}
+.sip-banner{background:linear-gradient(135deg,#1a2e2a,#1e3a30);border-radius:16px;padding:20px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center}
+.sip-btn{background:var(--groww);color:#0f1117;border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.fund-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.fund-card{background:var(--surface);border-radius:12px;padding:14px}
+.rv-item{background:var(--surface);border-radius:10px;padding:12px;display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.flogo{width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;color:white}
+.bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
+.bnav{flex:1;padding:10px 4px;text-align:center;font-size:10px;color:var(--text2)}
+.bnav.active{color:var(--groww)}
+
+/* PICK A FUND */
+.pick-topbar{background:var(--bg);padding:14px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
+.back-btn{font-size:20px;cursor:pointer;background:none;border:none;color:var(--text);padding:0;font-family:inherit}
+.pick-title{font-size:17px;font-weight:700;flex:1}
+.tc-btn{font-size:11px;background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:5px 9px;border-radius:8px;cursor:pointer;font-family:inherit}
+.pick-sub{padding:4px 16px 10px;font-size:12px;color:var(--text2);flex-shrink:0}
+.filters-row{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.filters-row::-webkit-scrollbar{display:none}
+.filter-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;font-family:inherit;color:var(--text);flex-shrink:0}
+.filter-btn.on{border-color:var(--groww);color:var(--groww)}
+.pills-row{padding:8px 16px;display:flex;gap:8px;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none;flex-shrink:0}
+.pills-row::-webkit-scrollbar{display:none}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface);font-size:12px;cursor:pointer;white-space:nowrap;font-family:inherit;color:var(--text);flex-shrink:0}
+.pill.on{border-color:var(--groww)}
+.mdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.profile-bar{margin:8px 16px 0;background:var(--surface2);border-radius:10px;padding:9px 14px;font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.fund-list{flex:1;overflow-y:auto;padding:0 16px}
+.fund-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.fname{font-size:13px;font-weight:600;margin-bottom:3px;line-height:1.3}
+.fcat{font-size:11px;color:var(--text2)}
+.fret-v{font-size:14px;font-weight:700;color:var(--green);text-align:right}
+.fret-p{font-size:10px;color:var(--text2);text-align:right}
+
+/* DROPDOWN */
+.dd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:none;align-items:flex-end;justify-content:center}
+.dd-overlay.open{display:flex}
+.dd-sheet{width:100%;max-width:400px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 30px;max-height:75vh;overflow-y:auto}
+.dd-title{font-size:16px;font-weight:700;margin-bottom:16px}
+.dd-opt{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:10px;margin-bottom:8px;border:1.5px solid transparent}
+.dd-opt.match{background:var(--mbg);border-color:rgba(0,196,140,0.3)}
+.dd-opt.partial{background:var(--pbg);border-color:rgba(245,166,35,0.3)}
+.dd-opt.nomatch{background:var(--nbg);border-color:rgba(244,92,92,0.3)}
+.dd-opt.neutral{background:var(--surface2);border-color:var(--border)}
+.dd-opt-left{display:flex;align-items:center;gap:10px}
+.dd-label{font-size:14px;font-weight:500}
+.dd-cb{width:20px;height:20px;border-radius:4px;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;cursor:pointer;background:transparent;color:transparent}
+.dd-cb.on{background:var(--groww);border-color:var(--groww);color:#0f1117}
+.mbadge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;border:none;font-family:inherit}
+.mbadge.match{background:rgba(0,196,140,0.2);color:var(--match)}
+.mbadge.partial{background:rgba(245,166,35,0.2);color:var(--partial)}
+.mbadge.nomatch{background:rgba(244,92,92,0.2);color:var(--nomatch)}
+.dd-actions{display:flex;gap:10px;padding-top:12px}
+
+/* TOOLTIP */
+.ttp{position:fixed;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.6;max-width:280px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:none;pointer-events:none}
+.ttp.show{display:block}
+.ttp-status{font-size:11px;font-weight:700;margin-bottom:4px}
+.ttp-body{color:var(--text2)}
+
+/* TEST CASES */
+.tc-wrap{flex:1;overflow-y:auto;padding:16px}
+.tc-card{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--border)}
+.tc-card h3{font-size:13px;font-weight:700;color:var(--groww);margin-bottom:10px}
+.tc-row{display:flex;justify-content:space-between;padding:4px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.tc-row:last-child{border-bottom:none}
+.tc-k{color:var(--text2)}
+.tc-v{font-weight:500;text-align:right;max-width:60%}
+.tc-sec{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.5px;margin:12px 0 6px}
+.tc-clf{display:flex;align-items:flex-start;gap:8px;padding:5px 0;font-size:12px;border-bottom:1px solid var(--border)}
+.tc-clf:last-child{border-bottom:none}
+.tc-badge{padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;flex-shrink:0;margin-top:1px}
+.tc-badge.match{background:rgba(0,196,140,0.2);color:var(--match)}
+.tc-badge.partial{background:rgba(245,166,35,0.2);color:var(--partial)}
+.tc-badge.nomatch{background:rgba(244,92,92,0.2);color:var(--nomatch)}
+.tc-expl{color:var(--text2);flex:1;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="phone">
+
+<!-- ══ SCREEN: SURVEY ══ -->
+<div class="screen active" id="s-survey">
+  <div class="topbar">
+    <span class="logo">groww</span>
+    <span style="font-size:12px;color:var(--text2);margin-left:auto">Risk Profile Setup</span>
+  </div>
+
+  <!-- Q1 -->
+  <div class="qstep active" id="q1">
+    <div class="prog-bar"><div class="prog-fill" style="width:11%"></div></div>
+    <div class="prog-label">Question 1 of 9</div>
+    <div class="q-label">About you</div>
+    <div class="q-text">How old are you?</div>
+    <button class="opt" onclick="pick(this,'age','18-24')">18 to 24 years</button>
+    <button class="opt" onclick="pick(this,'age','25-34')">25 to 34 years</button>
+    <button class="opt" onclick="pick(this,'age','35-44')">35 to 44 years</button>
+    <button class="opt" onclick="pick(this,'age','45-54')">45 to 54 years</button>
+    <button class="opt" onclick="pick(this,'age','55+')">55 years or older</button>
+  </div>
+
+  <!-- Q2 -->
+  <div class="qstep" id="q2">
+    <div class="prog-bar"><div class="prog-fill" style="width:22%"></div></div>
+    <div class="prog-label">Question 2 of 9</div>
+    <div class="q-label">About you</div>
+    <div class="q-text">What is your gender?</div>
+    <button class="opt" onclick="pick(this,'gender','male')">Male</button>
+    <button class="opt" onclick="pick(this,'gender','female')">Female</button>
+    <button class="opt" onclick="pick(this,'gender','other')">Other</button>
+    <div id="genderOtherWrap" style="display:none;margin-top:-2px;margin-bottom:9px">
+      <input type="text" class="text-input" id="genderOtherInput" placeholder="Please specify" oninput="profile.genderOther=this.value">
+    </div>
+  </div>
+
+  <!-- Q3 -->
+  <div class="qstep" id="q3">
+    <div class="prog-bar"><div class="prog-fill" style="width:33%"></div></div>
+    <div class="prog-label">Question 3 of 9</div>
+    <div class="q-label">Your situation</div>
+    <div class="q-text">What is your current occupation?</div>
+    <button class="opt" onclick="pick(this,'occupation','salaried')">Salaried employee</button>
+    <button class="opt" onclick="pick(this,'occupation','self-employed')">Self-employed or business owner</button>
+    <button class="opt" onclick="pick(this,'occupation','freelance')">Freelancer or consultant</button>
+    <button class="opt" onclick="pick(this,'occupation','student')">Student</button>
+    <button class="opt" onclick="pick(this,'occupation','retired')">Retired</button>
+    <button class="opt" onclick="pick(this,'occupation','unemployed')">Unemployed</button>
+  </div>
+
+  <!-- Q4 -->
+  <div class="qstep" id="q4">
+    <div class="prog-bar"><div class="prog-fill" style="width:44%"></div></div>
+    <div class="prog-label">Question 4 of 9</div>
+    <div class="q-label">Your situation</div>
+    <div class="q-text">How stable is your monthly income?</div>
+    <button class="opt" onclick="pick(this,'stability','very-stable')">Very stable<br><span style="font-size:12px;color:var(--text2);font-weight:400">Fixed salary every month</span></button>
+    <button class="opt" onclick="pick(this,'stability','mostly-stable')">Mostly stable<br><span style="font-size:12px;color:var(--text2);font-weight:400">Occasional variations in income</span></button>
+    <button class="opt" onclick="pick(this,'stability','variable')">Variable<br><span style="font-size:12px;color:var(--text2);font-weight:400">Changes month to month</span></button>
+    <button class="opt" onclick="pick(this,'stability','irregular')">Irregular<br><span style="font-size:12px;color:var(--text2);font-weight:400">No predictable income</span></button>
+  </div>
+
+  <!-- Q5 -->
+  <div class="qstep" id="q5">
+    <div class="prog-bar"><div class="prog-fill" style="width:55%"></div></div>
+    <div class="prog-label">Question 5 of 9</div>
+    <div class="q-label">Your investment</div>
+    <div class="q-text">How much can you comfortably invest every month?</div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px">This should not affect your daily expenses or emergency fund.</div>
+    <div class="field-label">Amount in rupees</div>
+    <input type="number" class="text-input" id="budgetInput" placeholder="e.g. 5000" min="100">
+  </div>
+
+  <!-- Q6 -->
+  <div class="qstep" id="q6">
+    <div class="prog-bar"><div class="prog-fill" style="width:66%"></div></div>
+    <div class="prog-label">Question 6 of 9</div>
+    <div class="q-label">Your investment</div>
+    <div class="q-text">How long do you plan to stay invested?</div>
+    <button class="opt" onclick="pick(this,'horizon','short')">Less than 2 years<br><span style="font-size:12px;color:var(--text2);font-weight:400">Short term</span></button>
+    <button class="opt" onclick="pick(this,'horizon','medium')">2 to 5 years<br><span style="font-size:12px;color:var(--text2);font-weight:400">Medium term</span></button>
+    <button class="opt" onclick="pick(this,'horizon','long')">5 to 10 years<br><span style="font-size:12px;color:var(--text2);font-weight:400">Long term</span></button>
+    <button class="opt" onclick="pick(this,'horizon','very-long')">More than 10 years<br><span style="font-size:12px;color:var(--text2);font-weight:400">Wealth building</span></button>
+  </div>
+
+  <!-- Q7 -->
+  <div class="qstep" id="q7">
+    <div class="prog-bar"><div class="prog-fill" style="width:77%"></div></div>
+    <div class="prog-label">Question 7 of 9</div>
+    <div class="q-label">Your risk comfort</div>
+    <div class="q-text">What do you do when you see a 20% drop in your portfolio?</div>
+    <div class="q-hint">Example: Your portfolio was worth Rs.1,00,000 last month. This month it shows Rs.80,000. What do you do?</div>
+    <button class="opt" onclick="pick(this,'reaction','sell')">Sell and move money somewhere safer</button>
+    <button class="opt" onclick="pick(this,'reaction','worried')">Feel very uneasy but wait and watch</button>
+    <button class="opt" onclick="pick(this,'reaction','hold')">Stay invested markets recover over time</button>
+    <button class="opt" onclick="pick(this,'reaction','buy')">Invest more, lower prices mean better value</button>
+  </div>
+
+  <!-- Q8 -->
+  <div class="qstep" id="q8">
+    <div class="prog-bar"><div class="prog-fill" style="width:88%"></div></div>
+    <div class="prog-label">Question 8 of 9</div>
+    <div class="q-label">Your goal</div>
+    <div class="q-text">What is your primary financial goal right now?</div>
+    <button class="opt" onclick="pick(this,'goal','emergency')">Build an emergency fund</button>
+    <button class="opt" onclick="pick(this,'goal','purchase')">Save for a specific purchase (car, house, education)</button>
+    <button class="opt" onclick="pick(this,'goal','wealth')">Grow wealth over the long term</button>
+    <button class="opt" onclick="pick(this,'goal','retirement')">Plan for retirement</button>
+  </div>
+
+  <!-- Q9 -->
+  <div class="qstep" id="q9">
+    <div class="prog-bar"><div class="prog-fill" style="width:100%"></div></div>
+    <div class="prog-label">Question 9 of 9</div>
+    <div class="q-label">Your experience</div>
+    <div class="q-text">Have you invested in mutual funds before?</div>
+    <button class="opt" onclick="pick(this,'experience','none')">No, this is my first time</button>
+    <button class="opt" onclick="pick(this,'experience','some')">Yes, for less than 2 years</button>
+    <button class="opt" onclick="pick(this,'experience','experienced')">Yes, for 2 to 5 years</button>
+    <button class="opt" onclick="pick(this,'experience','expert')">Yes, for more than 5 years</button>
+  </div>
+
+  <div class="nav-row">
+    <button class="btn btn-sec" id="prevBtn" style="display:none" onclick="prevQ()">Back</button>
+    <button class="btn btn-primary" id="nextBtn" disabled onclick="nextQ()">Continue</button>
+  </div>
+</div>
+
+<!-- ══ SCREEN: LOADING ══ -->
+<div class="screen" id="s-loading">
+  <div class="topbar"><span class="logo">groww</span></div>
+  <div class="loading-screen">
+    <div class="spinner"></div>
+    <div style="font-size:14px;color:var(--text2);line-height:1.6">Analysing your risk profile...<br><span style="font-size:12px">Matching all filters to your answers</span></div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: EXPLORE ══ -->
+<div class="screen" id="s-explore">
+  <div class="explore-topbar">
+    <span style="font-size:16px;font-weight:700">Mutual Funds</span>
+    <span style="font-size:14px;color:var(--text2)">Search</span>
+  </div>
+  <div class="explore-tabs">
+    <div class="etab active">Explore</div>
+    <div class="etab">Dashboard</div>
+    <div class="etab">SIPs</div>
+    <div class="etab">Watchlist</div>
+  </div>
+  <div class="explore-body">
+    <div class="sip-banner">
+      <div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px;line-height:1.3">Invest every month and grow your wealth with SIP</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:14px">Start with as little as Rs.100/month</div>
+        <button class="sip-btn" id="sipBtn" onclick="goScreen('s-pick');buildPickPage()">Start an SIP</button>
+      </div>
+    </div>
+    <div id="exploreBubble" style="display:none;background:#00d09c;color:#0f1117;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:600;margin:0 0 16px 0;position:relative;box-shadow:0 4px 16px rgba(0,208,156,0.3)">
+  <div style="position:absolute;top:-12px;left:40px;border:6px solid transparent;border-bottom-color:#00d09c"></div>
+  Tap "Start an SIP" above to see your personalised fund filters
+</div>
+<div style="font-size:14px;font-weight:600;margin-bottom:12px">Recently viewed</div>
+    <div class="rv-item"><div class="flogo" style="background:#1a3a4a">H</div><div style="font-size:13px;font-weight:500">HDFC Flexi Cap Direct Plan-Growth</div></div>
+    <div class="rv-item"><div class="flogo" style="background:#3a1a1a">B</div><div style="font-size:13px;font-weight:500">Bandhan Small Cap Fund</div></div>
+    <div class="rv-item" style="margin-bottom:16px"><div class="flogo" style="background:#1a1a3a">N</div><div style="font-size:13px;font-weight:500">Nippon India Multi Asset Allocation Fund</div></div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px">Popular Funds</div>
+    <div class="fund-cards">
+      <div class="fund-card"><div class="flogo" style="background:#1a3a4a;margin-bottom:10px">K</div><div style="font-size:12px;font-weight:600;margin-bottom:4px">Kotak Silver ETF FoF</div><div style="font-size:14px;font-weight:700;color:var(--green)">+36.22%</div><div style="font-size:10px;color:var(--text2)">3Y</div></div>
+      <div class="fund-card"><div class="flogo" style="background:#1a2a3a;margin-bottom:10px">I</div><div style="font-size:12px;font-weight:600;margin-bottom:4px">Invesco India Mid Cap</div><div style="font-size:14px;font-weight:700;color:var(--green)">+23.72%</div><div style="font-size:10px;color:var(--text2)">3Y</div></div>
+      <div class="fund-card"><div class="flogo" style="background:#3a1a1a;margin-bottom:10px">B</div><div style="font-size:12px;font-weight:600;margin-bottom:4px">Bandhan Small Cap</div><div style="font-size:14px;font-weight:700;color:var(--green)">+22.90%</div><div style="font-size:10px;color:var(--text2)">3Y</div></div>
+      <div class="fund-card"><div class="flogo" style="background:#1a3a1a;margin-bottom:10px">H</div><div style="font-size:12px;font-weight:600;margin-bottom:4px">HDFC Flexi Cap Direct</div><div style="font-size:14px;font-weight:700;color:var(--green)">+17.31%</div><div style="font-size:10px;color:var(--text2)">3Y</div></div>
+    </div>
+  </div>
+  <div class="bottom-nav">
+    <div class="bnav">Stocks</div>
+    <div class="bnav">F&amp;O</div>
+    <div class="bnav active">Mutual Funds</div>
+  </div>
+</div>
+
+<!-- ══ SCREEN: PICK A FUND ══ -->
+<div class="screen" id="s-pick">
+  <div class="pick-topbar">
+    <button class="back-btn" onclick="goScreen('s-explore')">&#8592;</button>
+    <span class="pick-title">Pick a fund</span>
+    <button class="tc-btn" style="background:#1a56db;border-color:#1a56db;color:white;font-weight:600" onclick="goScreen('s-tc')">Previous test cases</button>
+    <button class="tc-btn" style="background:#1a56db;border-color:#1a56db;color:white;font-weight:600;margin-left:4px" onclick="testAgain()">Test again</button>
+  </div>
+  <div class="pick-sub">Funds that invest in India's top and trustworthy companies</div>
+  <div class="filters-row">
+    <button class="filter-btn" id="fbCat" onclick="openDD('categories')">Categories &#9660;</button>
+    <button class="filter-btn" id="fbRisk" onclick="openDD('risk')">Risk &#9660;</button>
+    <button class="filter-btn">4+ Star &#9660;</button>
+    <button class="filter-btn">Fund House &#9660;</button>
+  </div>
+  <div class="pills-row" id="pillsRow"></div>
+  <div class="profile-bar" id="profileBar" style="display:none">
+    <span style="color:var(--groww)">&#10024;</span>
+    <span id="profileSum" style="font-size:11px"></span>
+  </div>
+  <div class="fund-list" id="fundList"></div>
+</div>
+
+<!-- ══ SCREEN: TEST CASES ══ -->
+<div class="screen" id="s-tc">
+  <div class="topbar">
+    <button class="back-btn" onclick="goScreen('s-pick')">&#8592;</button>
+    <span style="font-size:16px;font-weight:600">Previous test cases</span>
+  </div>
+  <div class="tc-wrap" id="tcWrap">
+    <div id="tcEmpty" style="padding:40px;text-align:center;color:var(--text2);font-size:13px">No test cases yet. Complete the survey first.</div>
+  </div>
+</div>
+
+<!-- ══ DROPDOWN ══ -->
+<div class="dd-overlay" id="ddOverlay" onclick="closeDD()">
+  <div class="dd-sheet" onclick="event.stopPropagation()">
+    <div class="dd-title" id="ddTitle"></div>
+    <div id="ddOpts"></div>
+    <div class="dd-actions">
+      <button class="btn btn-sec" style="padding:12px;font-size:14px" onclick="clearDD()">Clear</button>
+      <button class="btn btn-primary" style="flex:2;padding:12px;font-size:14px" onclick="applyDD()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOOLTIP ══ -->
+<div class="ttp" id="ttp">
+  <div class="ttp-status" id="ttpSt"></div>
+  <div class="ttp-body" id="ttpBd">Loading...</div>
+</div>
+
+<script>
+var profile={}, testCases=[], clf=null, ttpCache={}, ddType=null, pending=[];
+var selF={categories:[],risk:[],pills:[]};
+var curQ=1, totalQ=9;
+
+var FUNDS=[
+  {name:'Parag Parikh Flexi Cap Fund',cat:'Equity',sub:'Flexi Cap',ret:'+13.40%',bg:'#1a3a1a',tags:['Equity','Flexi Cap','Moderate','Moderately High']},
+  {name:'HDFC Flexi Cap Direct Plan-Growth',cat:'Equity',sub:'Flexi Cap',ret:'+17.31%',bg:'#1a3a2a',tags:['Equity','Flexi Cap','Moderately High','High']},
+  {name:'Motilal Oswal Midcap Fund',cat:'Equity',sub:'Mid Cap',ret:'+18.74%',bg:'#1a1a3a',tags:['Equity','Mid Cap','High','Very High']},
+  {name:'Bandhan Small Cap Fund',cat:'Equity',sub:'Small Cap',ret:'+22.90%',bg:'#3a1a1a',tags:['Equity','Small Cap','Very High']},
+  {name:'Nippon India Small Cap Fund',cat:'Equity',sub:'Small Cap',ret:'+13.83%',bg:'#2a1a1a',tags:['Equity','Small Cap','Very High']},
+  {name:'HDFC Mid Cap Fund',cat:'Equity',sub:'Mid Cap',ret:'+16.64%',bg:'#1a2a3a',tags:['Equity','Mid Cap','High','Very High']},
+  {name:'SBI Nifty Next 50 Index Fund',cat:'Equity',sub:'Large Cap',ret:'+17.46%',bg:'#1a2a1a',tags:['Equity','Large Cap','Index only','Moderate','Moderately High']},
+  {name:'UTI Nifty 50 Index Fund',cat:'Equity',sub:'Large Cap',ret:'+9.43%',bg:'#1a1a2a',tags:['Equity','Large Cap','Index only','Low','Moderate']},
+  {name:'ICICI Prudential Large Cap Fund',cat:'Equity',sub:'Large Cap',ret:'+12.21%',bg:'#1a1a3a',tags:['Equity','Large Cap','Moderately High']},
+  {name:'Nippon India Multi Asset Allocation',cat:'Hybrid',sub:'Multi Asset',ret:'+18.44%',bg:'#2a2a1a',tags:['Hybrid','Moderate','Moderately High']},
+  {name:'Mirae Asset Aggressive Hybrid Fund',cat:'Hybrid',sub:'Aggressive Hybrid',ret:'+12.60%',bg:'#2a1a2a',tags:['Hybrid','Moderate','Moderately High']},
+  {name:'HDFC Long Term Fund',cat:'Debt',sub:'Long Term',ret:'+6.40%',bg:'#2a2a2a',tags:['Debt','Low','Moderately Low']},
+  {name:'Mirae Asset Liquid Fund',cat:'Debt',sub:'Liquid',ret:'+6.89%',bg:'#1a2a2a',tags:['Debt','Low']},
+  {name:'Kotak Silver ETF FoF',cat:'Commodities',sub:'Silver',ret:'+36.22%',bg:'#2a1a3a',tags:['Commodities','High','Very High']},
+  {name:'HDFC Defence Fund',cat:'Equity',sub:'Sectoral',ret:'+35.52%',bg:'#1a3a1a',tags:['Equity','Sectoral','Very High']},
+  {name:'SBI Healthcare Opportunities Fund',cat:'Equity',sub:'Sectoral',ret:'+25.46%',bg:'#1a2a1a',tags:['Equity','Sectoral','Very High']},
+  {name:'Invesco India Mid Cap Fund',cat:'Equity',sub:'Mid Cap',ret:'+23.72%',bg:'#1a1a2a',tags:['Equity','Mid Cap','High','Very High']},
+  {name:'LIC MF Value Fund',cat:'Equity',sub:'Value',ret:'+17.54%',bg:'#2a1a1a',tags:['Equity','Moderate','Moderately High']}
+];
+
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  if(id==='s-explore'){
+    var b=document.getElementById('exploreBubble');
+    if(b){b.style.display='block'; setTimeout(function(){b.style.display='none';},6000);}
+  }
+}
+
+function pick(el,key,val){
+  var opts=el.parentNode.querySelectorAll('.opt');
+  for(var i=0;i<opts.length;i++) opts[i].classList.remove('selected');
+  el.classList.add('selected');
+  profile[key]=val;
+  document.getElementById('nextBtn').disabled=false;
+  if(key==='gender'){
+    var w=document.getElementById('genderOtherWrap');
+    if(w) w.style.display=(val==='other'?'block':'none');
+  }
+}
+
+function nextQ(){
+  if(curQ===5){
+    var v=document.getElementById('budgetInput').value;
+    if(!v||v<=0){alert('Please enter a valid amount');return;}
+    profile.budget=v;
+  }
+  if(curQ===9){
+    runAI();
+    return;
+  }
+  document.getElementById('q'+curQ).classList.remove('active');
+  curQ++;
+  document.getElementById('q'+curQ).classList.add('active');
+  document.getElementById('prevBtn').style.display='block';
+  if(curQ===9) document.getElementById('nextBtn').textContent='Submit';
+  if(curQ===5){
+    var existing=document.getElementById('budgetInput').value;
+    document.getElementById('nextBtn').disabled=(!existing||existing<=0);
+    document.getElementById('budgetInput').oninput=function(){
+      document.getElementById('nextBtn').disabled=(!this.value||this.value<=0);
+    };
+  } else {
+    document.getElementById('nextBtn').disabled=!profile[['','age','gender','occupation','stability','budget','horizon','reaction','goal','experience'][curQ]];
+  }
+}
+
+function prevQ(){
+  document.getElementById('q'+curQ).classList.remove('active');
+  curQ--;
+  document.getElementById('q'+curQ).classList.add('active');
+  if(curQ===1) document.getElementById('prevBtn').style.display='none';
+  document.getElementById('nextBtn').textContent=curQ===9?'Submit':'Continue';
+  document.getElementById('nextBtn').disabled=false;
+}
+
+async function runAI(){
+  goScreen('s-loading');
+  var bnum=parseInt(profile.budget)||0;
+  var bl=bnum<2000?'very low (under Rs.2000)':bnum<10000?'moderate (Rs.2000-10000)':bnum<50000?'high (Rs.10000-50000)':'very high (above Rs.50000)';
+  var prompt='You are a mutual fund risk profile classifier for Groww. Classify each filter option as match, partial, or no-match based on the full user profile below. Reason across ALL inputs together. Each explanation must reference specific profile details.\n\nUSER PROFILE:\n- Age: '+profile.age+'\n- Occupation: '+profile.occupation+'\n- Income stability: '+profile.stability+'\n- Monthly budget: '+bl+'\n- Investment horizon: '+profile.horizon+'\n- Reaction to 20% portfolio drop: '+profile.reaction+'\n- Primary goal: '+profile.goal+'\n- Experience: '+profile.experience+'\n- Notes: '+(profile.notes||'none')+'\n\nReturn ONLY valid JSON:\n{"risk":{"Low":{"status":"match|partial|no-match","explanation":"max 25 words specific to this user"},"Moderately Low":{"status":"...","explanation":"..."},"Moderate":{"status":"...","explanation":"..."},"Moderately High":{"status":"...","explanation":"..."},"High":{"status":"...","explanation":"..."},"Very High":{"status":"...","explanation":"..."}},"categories":{"Equity":{"status":"...","explanation":"..."},"Debt":{"status":"...","explanation":"..."},"Hybrid":{"status":"...","explanation":"..."},"Commodities":{"status":"...","explanation":"..."}},"quickFilters":{"Index only":{"status":"...","explanation":"..."},"Flexi Cap":{"status":"...","explanation":"..."},"Sectoral":{"status":"...","explanation":"..."},"4+ Star":{"status":"...","explanation":"..."},"Large Cap":{"status":"...","explanation":"..."}},"profileSummary":"one plain sentence"}\n\nIMPORTANT: Each section (risk, categories, quickFilters) must have at least one match, at least one partial, and at least one no-match. Never classify everything the same way.';
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    var data=await res.json();
+    var txt=data.content&&data.content[0]?data.content[0].text:'';
+    var m=txt.match(/\{[\s\S]*\}/);
+    clf=m?JSON.parse(m[0]):fallback();
+  }catch(e){clf=fallback();}
+  testCases.unshift({profile:Object.assign({},profile),clf:clf,time:new Date().toLocaleTimeString()});
+  // Reset filters for new profile
+  selF={categories:[],risk:[],pills:[]};
+  buildTCPage();
+  goScreen('s-explore');
+}
+
+function fallback(){
+  var hi=profile.reaction==='buy'||profile.reaction==='hold';
+  var lh=profile.horizon==='long'||profile.horizon==='very-long';
+  var ex=profile.experience==='experienced'||profile.experience==='expert';
+  return{
+    risk:{"Low":{status:hi?'no-match':'match',explanation:hi?'Your willingness to stay or buy during drops means low-risk funds will limit your growth potential.':'Your cautious reaction to drops makes capital-preserving low-risk funds appropriate.'},"Moderately Low":{status:hi?'no-match':'partial',explanation:'Moderately low risk may be too conservative for your '+profile.horizon+' horizon and '+profile.goal+' goal.'},"Moderate":{status:'partial',explanation:'Moderate risk is a reasonable middle ground but may underperform for your '+profile.goal+' goal.'},"Moderately High":{status:hi?'match':'partial',explanation:hi?'Your calm reaction to drops aligns with moderately high risk for your '+profile.horizon+' horizon.':'Slightly above your risk comfort based on your reaction to the drop scenario.'},"High":{status:hi&&lh?'match':'no-match',explanation:hi&&lh?'Your '+profile.horizon+' horizon and calm drop reaction makes high-risk equity suitable.':'High risk needs both a long horizon and strong drop tolerance.'},"Very High":{status:hi&&lh&&ex?'partial':'no-match',explanation:'Very high risk requires significant experience and very long horizons to manage volatility.'}},
+    categories:{
+      "Equity":{status:lh?'match':'partial',explanation:lh?'Your '+profile.horizon+' horizon gives equity funds enough time to recover and compound.':'Equity needs a longer horizon to ride out volatility fully.'},
+      "Debt":{status:hi?'no-match':(lh?'partial':'match'),explanation:hi?'Debt funds are too conservative for your risk appetite.':'Debt suits your preference for capital stability.'},
+      "Hybrid":{status:lh&&hi?'partial':'match',explanation:lh&&hi?'Hybrid funds balance equity and debt but may limit growth for your high risk comfort.':'Hybrid funds balance equity and debt well for your profile.'},
+      "Commodities":{status:ex&&hi?'partial':'no-match',explanation:ex&&hi?'Commodities suit experienced investors comfortable with high-volatility assets.':'Commodities are complex and volatile for your current profile.'}
+    },
+    quickFilters:{"Index only":{status:!ex?'match':'partial',explanation:!ex?'Index funds are low-cost and simple well-suited for your experience level.':'Your experience level allows for more active fund selection beyond just index funds.'},"Flexi Cap":{status:lh?'match':'partial',explanation:lh?'Flexi cap funds adapt across market caps ideal for your '+profile.horizon+' horizon.':'Flexi cap works best over longer horizons to fully benefit from allocation flexibility.'},"Sectoral":{status:ex&&hi?'partial':'no-match',explanation:ex&&hi?'Sectoral funds can amplify gains but concentration risk requires experience.':'Sectoral funds require experience and high risk tolerance not recommended here.'},"4+ Star":{status:'match',explanation:'Filtering to 4-star-and-above funds focuses on consistently rated options good for all profiles.'},"Large Cap":{status:!hi?'match':'partial',explanation:!hi?'Large cap stability suits your more cautious reaction to market drops.':'Large cap works for you but may limit growth given your higher risk tolerance.'}},
+    profileSummary:'Based on your answers, you have a '+(hi?'moderate to high':'conservative to moderate')+' risk profile with a '+profile.horizon+' investment horizon focused on '+profile.goal+'.'
+  };
+}
+
+function scol(s){return s==='match'?'var(--match)':s==='partial'?'var(--partial)':'var(--nomatch)';}
+function slabel(s){return s==='match'?'Matches your profile':s==='partial'?'Partial match':'Does not match';}
+
+function buildPickPage(){
+  // Reset pill selections visually (selF already reset in runAI)
+  var pr=document.getElementById('pillsRow');
+  pr.innerHTML='';
+  var qf=clf&&clf.quickFilters?clf.quickFilters:{};
+  Object.keys(qf).forEach(function(label){
+    var d=qf[label];
+    var st=typeof d==='object'?d.status:d;
+    var expl=typeof d==='object'?d.explanation:'';
+    var p=document.createElement('button');
+    p.className='pill';
+    p.setAttribute('data-filter',label);
+    p.setAttribute('data-status',st);
+    p.setAttribute('data-expl',expl);
+    p.innerHTML='<span class="mdot" style="background:'+scol(st)+'"></span> '+label;
+    p.onclick=function(){togglePill(this);};
+    pr.appendChild(p);
+  });
+  document.getElementById('fbCat').classList.remove('on');
+  document.getElementById('fbRisk').classList.remove('on');
+  document.getElementById('profileBar').style.display='flex';
+  document.getElementById('profileSum').textContent=clf&&clf.profileSummary?clf.profileSummary:'';
+  // Only reset funds display on first build, not on re-navigation
+  renderFunds(getAF());
+}
+
+function togglePill(el){
+  var label=el.getAttribute('data-filter');
+  var st=el.getAttribute('data-status');
+  var expl=el.getAttribute('data-expl');
+  var on=el.classList.toggle('on');
+  if(on) selF.pills.push(label);
+  else selF.pills=selF.pills.filter(function(x){return x!==label;});
+  renderFunds(getAF());
+  if(on) showTtp(el,label,st,expl);
+}
+
+function getAF(){return selF.categories.concat(selF.risk).concat(selF.pills);}
+
+function renderFunds(active){
+  var fl=document.getElementById('fundList');
+  fl.innerHTML='';
+  var funds=FUNDS;
+  // Build all selected filters as a flat list - every single one must match (AND logic)
+  var allSelected=selF.categories.concat(selF.risk).concat(selF.pills);
+  if(allSelected.length>0){
+    funds=FUNDS.filter(function(f){
+      // Every selected filter must be satisfied
+      return allSelected.every(function(a){
+        return f.cat.toLowerCase()===a.toLowerCase() ||
+               f.sub.toLowerCase()===a.toLowerCase() ||
+               f.tags.some(function(t){return t.toLowerCase()===a.toLowerCase();});
+      });
+    });
+  }
+  if(!funds.length){fl.innerHTML='<div style="padding:30px;text-align:center;color:var(--text2);font-size:13px">No funds match the selected filters.</div>';return;}
+  funds.forEach(function(f){
+    var r=document.createElement('div');
+    r.className='fund-row';
+    r.innerHTML='<div class="flogo" style="background:'+f.bg+'">'+f.name[0]+'</div><div style="flex:1"><div class="fname">'+f.name+'</div><div class="fcat">'+f.cat+' &middot; '+f.sub+'</div></div><div style="text-align:right;flex-shrink:0"><div class="fret-v">'+f.ret+'</div><div class="fret-p">3Y</div></div><div style="color:var(--text2);font-size:14px;margin-left:4px">&#8250;</div>';
+    fl.appendChild(r);
+  });
+}
+
+function openDD(type){
+  ddType=type;
+  pending=selF[type]?selF[type].slice():[];
+  document.getElementById('ddTitle').textContent=type==='risk'?'Risk':'Categories';
+  var opts=type==='risk'?['Low','Moderately Low','Moderate','Moderately High','High','Very High']:['Equity','Debt','Hybrid','Commodities'];
+  var data=clf&&clf[type]?clf[type]:{};
+  var container=document.getElementById('ddOpts');
+  container.innerHTML='';
+  opts.forEach(function(opt){
+    var d=data[opt];
+    var st=d?(typeof d==='object'?d.status:d):'neutral';
+    var expl=d&&typeof d==='object'?d.explanation:'';
+    var checked=pending.indexOf(opt)>=0;
+    var div=document.createElement('div');
+    var cls=st==='no-match'?'nomatch':st==='neutral'?'neutral':st;
+    div.className='dd-opt '+cls;
+    var cbcls='dd-cb'+(checked?' on':'');
+    var cbmark=checked?'&#10003;':'';
+    div.innerHTML='<div class="dd-opt-left"><div class="'+cbcls+'" id="cb_'+opt.replace(/ /g,'_')+'">'+cbmark+'</div><span class="dd-label">'+opt+'</span></div>'+(st!=='neutral'?'<button class="mbadge '+(st==='no-match'?'nomatch':st)+'" id="badge_'+opt.replace(/ /g,'_')+'">'+slabel(st)+'</button>':'');
+    container.appendChild(div);
+    var cbEl=document.getElementById('cb_'+opt.replace(/ /g,'_'));
+    if(cbEl) cbEl.onclick=function(e){e.stopPropagation();toggleCB(opt,cbEl);};
+    var badgeEl=document.getElementById('badge_'+opt.replace(/ /g,'_'));
+    if(badgeEl){
+      var capturedOpt=opt, capturedSt=st, capturedExpl=expl;
+      badgeEl.onclick=function(e){e.stopPropagation();showTtp(badgeEl,capturedOpt,capturedSt,capturedExpl);};
+    }
+  });
+  document.getElementById('ddOverlay').classList.add('open');
+}
+
+function toggleCB(opt,el){
+  var idx=pending.indexOf(opt);
+  if(idx>=0){pending.splice(idx,1);el.classList.remove('on');el.innerHTML='';}
+  else{pending.push(opt);el.classList.add('on');el.innerHTML='&#10003;';}
+}
+
+function clearDD(){pending=[];document.querySelectorAll('.dd-cb').forEach(function(c){c.classList.remove('on');c.innerHTML='';});}
+
+function applyDD(){
+  if(ddType){
+    selF[ddType]=pending.slice();
+    var btnId=ddType==='risk'?'fbRisk':'fbCat';
+    document.getElementById(btnId).classList.toggle('on',pending.length>0);
+  }
+  document.getElementById('ddOverlay').classList.remove('open');
+  hideTtp();
+  renderFunds(getAF());
+}
+
+function closeDD(){document.getElementById('ddOverlay').classList.remove('open');hideTtp();}
+
+function showTtp(el,opt,st,expl){
+  document.getElementById('ttpSt').textContent=opt+' '+slabel(st);
+  document.getElementById('ttpSt').style.color=scol(st);
+  document.getElementById('ttpBd').textContent=expl&&expl.length>5?expl:'Loading...';
+  if(!expl||expl.length<=5) fetchTtp(opt,st);
+  var rect=el.getBoundingClientRect();
+  var top=rect.bottom+10;
+  var left=rect.left+8;
+  if(left+280>window.innerWidth) left=window.innerWidth-288;
+  if(left<8) left=8;
+  if(top+100>window.innerHeight-20) top=rect.top-110;
+  var t=document.getElementById('ttp');
+  t.style.top=top+'px';
+  t.style.left=left+'px';
+  t.classList.add('show');
+  setTimeout(function(){document.addEventListener('click',hideTtp,{once:true});},100);
+}
+
+async function fetchTtp(opt,st){
+  var key=opt+'-'+st;
+  if(ttpCache[key]){document.getElementById('ttpBd').textContent=ttpCache[key];return;}
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:'Explain in one sentence (max 25 words) why the "'+opt+'" mutual fund filter '+( st==='match'?'matches':st==='partial'?'partially matches':'does not match')+' a user with: horizon='+profile.horizon+', reaction='+profile.reaction+', goal='+profile.goal+', experience='+profile.experience+'. No advice, no return predictions.'}]})});
+    var data=await res.json();
+    var txt=data.content&&data.content[0]?data.content[0].text.trim():'';
+    var bad=['you should','consider','invest in','recommend','will return','guaranteed'].some(function(t){return txt.toLowerCase().includes(t);});
+    var wc=txt.split(/\s+/).length;
+    var out=(!bad&&wc>=5&&wc<=40)?txt:'Your combined profile inputs were used to determine this match level.';
+    ttpCache[key]=out;
+    document.getElementById('ttpBd').textContent=out;
+  }catch(e){document.getElementById('ttpBd').textContent='Unable to load explanation.';}
+}
+
+function hideTtp(){document.getElementById('ttp').classList.remove('show');}
+
+function testAgain(){
+  // Save current test case (already saved), reset profile and survey state
+  profile={};
+  curQ=1;
+  selF={categories:[],risk:[],pills:[]};
+  // Reset all survey steps - show q1, hide rest
+  for(var i=1;i<=9;i++){
+    var q=document.getElementById('q'+i);
+    if(q) q.classList[i===1?'add':'remove']('active');
+  }
+  // Reset all opt selections
+  document.querySelectorAll('.opt').forEach(function(o){o.classList.remove('selected');});
+  // Reset inputs
+  var bi=document.getElementById('budgetInput'); if(bi) bi.value='';
+  var ni=document.getElementById('notesInput'); if(ni) ni.value='';
+  var gi=document.getElementById('genderOtherInput'); if(gi) gi.value='';
+  var gw=document.getElementById('genderOtherWrap'); if(gw) gw.style.display='none';
+  // Reset nav buttons
+  document.getElementById('prevBtn').style.display='none';
+  document.getElementById('nextBtn').disabled=true;
+  document.getElementById('nextBtn').textContent='Continue';
+  goScreen('s-survey');
+}
+
+function buildTCPage(){
+  document.getElementById('tcEmpty').style.display=testCases.length?'none':'block';
+  var wrap=document.getElementById('tcWrap');
+  wrap.querySelectorAll('.tc-card').forEach(function(c){c.remove();});
+  var keys=['age','gender','occupation','stability','budget','horizon','reaction','goal','experience'];
+  var labels={age:'Age',gender:'Gender',occupation:'Occupation',stability:'Income stability',budget:'Monthly budget',horizon:'Horizon',reaction:'Reaction to drop',goal:'Goal',experience:'Experience'};
+  testCases.forEach(function(tc,i){
+    var card=document.createElement('div');
+    card.className='tc-card';
+    var html='<h3>Test Case '+(testCases.length-i)+' &middot; '+tc.time+'</h3>';
+    html+='<div class="tc-sec">Survey Responses</div>';
+    keys.forEach(function(k){if(tc.profile[k])html+='<div class="tc-row"><span class="tc-k">'+labels[k]+'</span><span class="tc-v">'+tc.profile[k]+'</span></div>';});
+    html+='<div class="tc-sec">Profile Summary</div><div style="font-size:12px;color:var(--text2);padding:6px 0;border-bottom:1px solid var(--border)">'+(tc.clf&&tc.clf.profileSummary?tc.clf.profileSummary:' ')+'</div>';
+    ['risk','categories','quickFilters'].forEach(function(sec){
+      html+='<div class="tc-sec">'+(sec==='risk'?'Risk':sec==='categories'?'Categories':'Quick Filters')+'</div>';
+      var d=tc.clf&&tc.clf[sec]?tc.clf[sec]:{};
+      Object.keys(d).forEach(function(opt){
+        var val=d[opt];
+        var st=typeof val==='object'?val.status:val;
+        var ex=typeof val==='object'?val.explanation:'';
+        var badge=st==='no-match'?'nomatch':st;
+        html+='<div class="tc-clf"><span class="tc-badge '+badge+'">'+(st==='match'?'Match':st==='partial'?'Partial':'No match')+'</span><div class="tc-expl"><strong>'+opt+':</strong> '+(ex||' ')+'</div></div>';
+      });
+    });
+    card.innerHTML=html;
+    wrap.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>
