@@ -359,6 +359,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 
 <script>
 var profile={}, testCases=[], clf=null, ttpCache={}, ddType=null, pending=[], prevScreen='s-survey';
+try{var saved=localStorage.getItem('groww_tc');if(saved)testCases=JSON.parse(saved);}catch(e){}
 var selF={categories:[],risk:[],pills:[]};
 var curQ=1, totalQ=9;
 
@@ -382,6 +383,8 @@ var FUNDS=[
   {name:'Invesco India Mid Cap Fund',cat:'Equity',sub:'Mid Cap',ret:'+23.72%',bg:'#1a1a2a',tags:['Equity','Mid Cap','High','Very High']},
   {name:'LIC MF Value Fund',cat:'Equity',sub:'Value',ret:'+17.54%',bg:'#2a1a1a',tags:['Equity','Moderate','Moderately High']}
 ];
+
+buildTCPage();
 
 function goTC(){
   prevScreen=document.querySelector('.screen.active').id;
@@ -452,6 +455,7 @@ async function runAI(){
     clf=m?JSON.parse(m[0]):fallback();
   }catch(e){clf=fallback();}
   testCases.unshift({profile:Object.assign({},profile),clf:clf,time:new Date().toLocaleTimeString()});
+  try{localStorage.setItem('groww_tc',JSON.stringify(testCases));}catch(e){}
   selF={categories:[],risk:[],pills:[]};
   buildTCPage();
   goScreen('s-explore');
