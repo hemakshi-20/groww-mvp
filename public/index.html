@@ -14,18 +14,12 @@
 }
 body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif;display:flex;justify-content:center;min-height:100vh}
 .phone{width:100%;max-width:400px;background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
-
-/* SCREENS - only one visible at a time */
 .screen{display:none;flex-direction:column;min-height:100vh}
 .screen.active{display:flex}
-
 .topbar{background:var(--bg);padding:14px 16px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
 .logo{font-size:20px;font-weight:800;color:var(--groww)}
-
-/* SURVEY STEPS - only one visible at a time */
 .qstep{display:none;flex-direction:column;flex:1;overflow-y:auto;padding:20px 16px 8px}
 .qstep.active{display:flex}
-
 .prog-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:6px}
 .prog-fill{height:100%;background:var(--groww);border-radius:2px;transition:width 0.3s}
 .prog-label{font-size:11px;color:var(--text2);margin-bottom:20px}
@@ -43,13 +37,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 .btn-primary{background:var(--groww);color:#0f1117}
 .btn-primary:disabled{opacity:0.4;cursor:default}
 .btn-sec{background:var(--surface);color:var(--text)}
-
-/* LOADING */
 .loading-screen{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:40px;text-align:center}
 .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--groww);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* EXPLORE */
 .explore-topbar{background:var(--surface);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
 .explore-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .etab{flex:1;padding:12px;text-align:center;font-size:13px;font-weight:500;color:var(--text2)}
@@ -64,8 +54,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 .bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--surface);flex-shrink:0}
 .bnav{flex:1;padding:10px 4px;text-align:center;font-size:10px;color:var(--text2)}
 .bnav.active{color:var(--groww)}
-
-/* PICK A FUND */
 .pick-topbar{background:var(--bg);padding:14px 16px 10px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);flex-shrink:0}
 .back-btn{font-size:20px;cursor:pointer;background:none;border:none;color:var(--text);padding:0;font-family:inherit}
 .pick-title{font-size:17px;font-weight:700;flex:1}
@@ -87,8 +75,6 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 .fcat{font-size:11px;color:var(--text2)}
 .fret-v{font-size:14px;font-weight:700;color:var(--green);text-align:right}
 .fret-p{font-size:10px;color:var(--text2);text-align:right}
-
-/* DROPDOWN */
 .dd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:100;display:none;align-items:flex-end;justify-content:center}
 .dd-overlay.open{display:flex}
 .dd-sheet{width:100%;max-width:400px;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 16px 30px;max-height:75vh;overflow-y:auto}
@@ -107,14 +93,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 .mbadge.partial{background:rgba(245,166,35,0.2);color:var(--partial)}
 .mbadge.nomatch{background:rgba(244,92,92,0.2);color:var(--nomatch)}
 .dd-actions{display:flex;gap:10px;padding-top:12px}
-
-/* TOOLTIP */
 .ttp{position:fixed;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;font-size:12px;line-height:1.6;max-width:280px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:none;pointer-events:none}
 .ttp.show{display:block}
 .ttp-status{font-size:11px;font-weight:700;margin-bottom:4px}
 .ttp-body{color:var(--text2)}
-
-/* TEST CASES */
 .tc-wrap{flex:1;overflow-y:auto;padding:16px}
 .tc-card{background:var(--surface);border-radius:14px;padding:16px;margin-bottom:14px;border:1px solid var(--border)}
 .tc-card h3{font-size:13px;font-weight:700;color:var(--groww);margin-bottom:10px}
@@ -130,6 +112,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 .tc-badge.partial{background:rgba(245,166,35,0.2);color:var(--partial)}
 .tc-badge.nomatch{background:rgba(244,92,92,0.2);color:var(--nomatch)}
 .tc-expl{color:var(--text2);flex:1;line-height:1.4}
+.blue-btn{font-size:11px;background:#1a56db;border:1px solid #1a56db;color:white;padding:5px 9px;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -139,7 +122,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 <div class="screen active" id="s-survey">
   <div class="topbar">
     <span class="logo">groww</span>
-    <span style="font-size:12px;color:var(--text2);margin-left:auto">Risk Profile Setup</span>
+    <span style="font-size:12px;color:var(--text2);margin-left:auto;margin-right:10px">Risk Profile Setup</span>
+    <button class="blue-btn" onclick="goTC()">Previous test cases</button>
   </div>
 
   <!-- Q1 -->
@@ -263,7 +247,12 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 
 <!-- ══ SCREEN: LOADING ══ -->
 <div class="screen" id="s-loading">
-  <div class="topbar"><span class="logo">groww</span></div>
+  <div class="topbar">
+    <span class="logo">groww</span>
+    <div style="margin-left:auto">
+      <button class="blue-btn" onclick="goTC()">Previous test cases</button>
+    </div>
+  </div>
   <div class="loading-screen">
     <div class="spinner"></div>
     <div style="font-size:14px;color:var(--text2);line-height:1.6">Analysing your risk profile...<br><span style="font-size:12px">Matching all filters to your answers</span></div>
@@ -274,7 +263,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 <div class="screen" id="s-explore">
   <div class="explore-topbar">
     <span style="font-size:16px;font-weight:700">Mutual Funds</span>
-    <span style="font-size:14px;color:var(--text2)">Search</span>
+    <div style="display:flex;align-items:center;gap:10px">
+      <span style="font-size:14px;color:var(--text2)">Search</span>
+      <button class="blue-btn" onclick="goTC()">Previous test cases</button>
+    </div>
   </div>
   <div class="explore-tabs">
     <div class="etab active">Explore</div>
@@ -291,10 +283,10 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
       </div>
     </div>
     <div id="exploreBubble" style="display:none;background:#00d09c;color:#0f1117;border-radius:12px;padding:10px 14px;font-size:12px;font-weight:600;margin:0 0 16px 0;position:relative;box-shadow:0 4px 16px rgba(0,208,156,0.3)">
-  <div style="position:absolute;top:-12px;left:40px;border:6px solid transparent;border-bottom-color:#00d09c"></div>
-  Tap "Start an SIP" above to see your personalised fund filters
-</div>
-<div style="font-size:14px;font-weight:600;margin-bottom:12px">Recently viewed</div>
+      <div style="position:absolute;top:-12px;left:40px;border:6px solid transparent;border-bottom-color:#00d09c"></div>
+      Tap "Start an SIP" above to see your personalised fund filters
+    </div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:12px">Recently viewed</div>
     <div class="rv-item"><div class="flogo" style="background:#1a3a4a">H</div><div style="font-size:13px;font-weight:500">HDFC Flexi Cap Direct Plan-Growth</div></div>
     <div class="rv-item"><div class="flogo" style="background:#3a1a1a">B</div><div style="font-size:13px;font-weight:500">Bandhan Small Cap Fund</div></div>
     <div class="rv-item" style="margin-bottom:16px"><div class="flogo" style="background:#1a1a3a">N</div><div style="font-size:13px;font-weight:500">Nippon India Multi Asset Allocation Fund</div></div>
@@ -318,8 +310,8 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
   <div class="pick-topbar">
     <button class="back-btn" onclick="goScreen('s-explore')">&#8592;</button>
     <span class="pick-title">Pick a fund</span>
-    <button class="tc-btn" style="background:#1a56db;border-color:#1a56db;color:white;font-weight:600" onclick="goScreen('s-tc')">Previous test cases</button>
-    <button class="tc-btn" style="background:#1a56db;border-color:#1a56db;color:white;font-weight:600;margin-left:4px" onclick="testAgain()">Test again</button>
+    <button class="blue-btn" onclick="goTC()">Previous test cases</button>
+    <button class="blue-btn" style="margin-left:4px" onclick="testAgain()">Test again</button>
   </div>
   <div class="pick-sub">Funds that invest in India's top and trustworthy companies</div>
   <div class="filters-row">
@@ -339,7 +331,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 <!-- ══ SCREEN: TEST CASES ══ -->
 <div class="screen" id="s-tc">
   <div class="topbar">
-    <button class="back-btn" onclick="goScreen('s-pick')">&#8592;</button>
+    <button class="back-btn" onclick="goScreen(prevScreen)">&#8592;</button>
     <span style="font-size:16px;font-weight:600">Previous test cases</span>
   </div>
   <div class="tc-wrap" id="tcWrap">
@@ -366,7 +358,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,sans-serif
 </div>
 
 <script>
-var profile={}, testCases=[], clf=null, ttpCache={}, ddType=null, pending=[];
+var profile={}, testCases=[], clf=null, ttpCache={}, ddType=null, pending=[], prevScreen='s-survey';
 var selF={categories:[],risk:[],pills:[]};
 var curQ=1, totalQ=9;
 
@@ -390,6 +382,11 @@ var FUNDS=[
   {name:'Invesco India Mid Cap Fund',cat:'Equity',sub:'Mid Cap',ret:'+23.72%',bg:'#1a1a2a',tags:['Equity','Mid Cap','High','Very High']},
   {name:'LIC MF Value Fund',cat:'Equity',sub:'Value',ret:'+17.54%',bg:'#2a1a1a',tags:['Equity','Moderate','Moderately High']}
 ];
+
+function goTC(){
+  prevScreen=document.querySelector('.screen.active').id;
+  goScreen('s-tc');
+}
 
 function goScreen(id){
   document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
@@ -418,10 +415,7 @@ function nextQ(){
     if(!v||v<=0){alert('Please enter a valid amount');return;}
     profile.budget=v;
   }
-  if(curQ===9){
-    runAI();
-    return;
-  }
+  if(curQ===9){runAI();return;}
   document.getElementById('q'+curQ).classList.remove('active');
   curQ++;
   document.getElementById('q'+curQ).classList.add('active');
@@ -430,9 +424,7 @@ function nextQ(){
   if(curQ===5){
     var existing=document.getElementById('budgetInput').value;
     document.getElementById('nextBtn').disabled=(!existing||existing<=0);
-    document.getElementById('budgetInput').oninput=function(){
-      document.getElementById('nextBtn').disabled=(!this.value||this.value<=0);
-    };
+    document.getElementById('budgetInput').oninput=function(){document.getElementById('nextBtn').disabled=(!this.value||this.value<=0);};
   } else {
     document.getElementById('nextBtn').disabled=!profile[['','age','gender','occupation','stability','budget','horizon','reaction','goal','experience'][curQ]];
   }
@@ -454,13 +446,12 @@ async function runAI(){
   var prompt='You are a mutual fund risk profile classifier for Groww. Classify each filter option as match, partial, or no-match based on the full user profile below. Reason across ALL inputs together. Each explanation must reference specific profile details.\n\nUSER PROFILE:\n- Age: '+profile.age+'\n- Occupation: '+profile.occupation+'\n- Income stability: '+profile.stability+'\n- Monthly budget: '+bl+'\n- Investment horizon: '+profile.horizon+'\n- Reaction to 20% portfolio drop: '+profile.reaction+'\n- Primary goal: '+profile.goal+'\n- Experience: '+profile.experience+'\n- Notes: '+(profile.notes||'none')+'\n\nReturn ONLY valid JSON:\n{"risk":{"Low":{"status":"match|partial|no-match","explanation":"max 25 words specific to this user"},"Moderately Low":{"status":"...","explanation":"..."},"Moderate":{"status":"...","explanation":"..."},"Moderately High":{"status":"...","explanation":"..."},"High":{"status":"...","explanation":"..."},"Very High":{"status":"...","explanation":"..."}},"categories":{"Equity":{"status":"...","explanation":"..."},"Debt":{"status":"...","explanation":"..."},"Hybrid":{"status":"...","explanation":"..."},"Commodities":{"status":"...","explanation":"..."}},"quickFilters":{"Index only":{"status":"...","explanation":"..."},"Flexi Cap":{"status":"...","explanation":"..."},"Sectoral":{"status":"...","explanation":"..."},"4+ Star":{"status":"...","explanation":"..."},"Large Cap":{"status":"...","explanation":"..."}},"profileSummary":"one plain sentence"}\n\nIMPORTANT: Each section (risk, categories, quickFilters) must have at least one match, at least one partial, and at least one no-match. Never classify everything the same way.';
   try{
     var res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:prompt})});
-var data=await res.json();
-var txt=data.text||'';
+    var data=await res.json();
+    var txt=data.text||'';
     var m=txt.match(/\{[\s\S]*\}/);
     clf=m?JSON.parse(m[0]):fallback();
   }catch(e){clf=fallback();}
   testCases.unshift({profile:Object.assign({},profile),clf:clf,time:new Date().toLocaleTimeString()});
-  // Reset filters for new profile
   selF={categories:[],risk:[],pills:[]};
   buildTCPage();
   goScreen('s-explore');
@@ -472,12 +463,7 @@ function fallback(){
   var ex=profile.experience==='experienced'||profile.experience==='expert';
   return{
     risk:{"Low":{status:hi?'no-match':'match',explanation:hi?'Your willingness to stay or buy during drops means low-risk funds will limit your growth potential.':'Your cautious reaction to drops makes capital-preserving low-risk funds appropriate.'},"Moderately Low":{status:hi?'no-match':'partial',explanation:'Moderately low risk may be too conservative for your '+profile.horizon+' horizon and '+profile.goal+' goal.'},"Moderate":{status:'partial',explanation:'Moderate risk is a reasonable middle ground but may underperform for your '+profile.goal+' goal.'},"Moderately High":{status:hi?'match':'partial',explanation:hi?'Your calm reaction to drops aligns with moderately high risk for your '+profile.horizon+' horizon.':'Slightly above your risk comfort based on your reaction to the drop scenario.'},"High":{status:hi&&lh?'match':'no-match',explanation:hi&&lh?'Your '+profile.horizon+' horizon and calm drop reaction makes high-risk equity suitable.':'High risk needs both a long horizon and strong drop tolerance.'},"Very High":{status:hi&&lh&&ex?'partial':'no-match',explanation:'Very high risk requires significant experience and very long horizons to manage volatility.'}},
-    categories:{
-      "Equity":{status:lh?'match':'partial',explanation:lh?'Your '+profile.horizon+' horizon gives equity funds enough time to recover and compound.':'Equity needs a longer horizon to ride out volatility fully.'},
-      "Debt":{status:hi?'no-match':(lh?'partial':'match'),explanation:hi?'Debt funds are too conservative for your risk appetite.':'Debt suits your preference for capital stability.'},
-      "Hybrid":{status:lh&&hi?'partial':'match',explanation:lh&&hi?'Hybrid funds balance equity and debt but may limit growth for your high risk comfort.':'Hybrid funds balance equity and debt well for your profile.'},
-      "Commodities":{status:ex&&hi?'partial':'no-match',explanation:ex&&hi?'Commodities suit experienced investors comfortable with high-volatility assets.':'Commodities are complex and volatile for your current profile.'}
-    },
+    categories:{"Equity":{status:lh?'match':'partial',explanation:lh?'Your '+profile.horizon+' horizon gives equity funds enough time to recover and compound.':'Equity needs a longer horizon to ride out volatility fully.'},"Debt":{status:hi?'no-match':(lh?'partial':'match'),explanation:hi?'Debt funds are too conservative for your risk appetite.':'Debt suits your preference for capital stability.'},"Hybrid":{status:lh&&hi?'partial':'match',explanation:lh&&hi?'Hybrid funds balance equity and debt but may limit growth for your high risk comfort.':'Hybrid funds balance equity and debt well for your profile.'},"Commodities":{status:ex&&hi?'partial':'no-match',explanation:ex&&hi?'Commodities suit experienced investors comfortable with high-volatility assets.':'Commodities are complex and volatile for your current profile.'}},
     quickFilters:{"Index only":{status:!ex?'match':'partial',explanation:!ex?'Index funds are low-cost and simple well-suited for your experience level.':'Your experience level allows for more active fund selection beyond just index funds.'},"Flexi Cap":{status:lh?'match':'partial',explanation:lh?'Flexi cap funds adapt across market caps ideal for your '+profile.horizon+' horizon.':'Flexi cap works best over longer horizons to fully benefit from allocation flexibility.'},"Sectoral":{status:ex&&hi?'partial':'no-match',explanation:ex&&hi?'Sectoral funds can amplify gains but concentration risk requires experience.':'Sectoral funds require experience and high risk tolerance not recommended here.'},"4+ Star":{status:'match',explanation:'Filtering to 4-star-and-above funds focuses on consistently rated options good for all profiles.'},"Large Cap":{status:!hi?'match':'partial',explanation:!hi?'Large cap stability suits your more cautious reaction to market drops.':'Large cap works for you but may limit growth given your higher risk tolerance.'}},
     profileSummary:'Based on your answers, you have a '+(hi?'moderate to high':'conservative to moderate')+' risk profile with a '+profile.horizon+' investment horizon focused on '+profile.goal+'.'
   };
@@ -487,7 +473,6 @@ function scol(s){return s==='match'?'var(--match)':s==='partial'?'var(--partial)
 function slabel(s){return s==='match'?'Matches your profile':s==='partial'?'Partial match':'Does not match';}
 
 function buildPickPage(){
-  // Reset pill selections visually (selF already reset in runAI)
   var pr=document.getElementById('pillsRow');
   pr.innerHTML='';
   var qf=clf&&clf.quickFilters?clf.quickFilters:{};
@@ -508,7 +493,6 @@ function buildPickPage(){
   document.getElementById('fbRisk').classList.remove('on');
   document.getElementById('profileBar').style.display='flex';
   document.getElementById('profileSum').textContent=clf&&clf.profileSummary?clf.profileSummary:'';
-  // Only reset funds display on first build, not on re-navigation
   renderFunds(getAF());
 }
 
@@ -529,16 +513,17 @@ function renderFunds(active){
   var fl=document.getElementById('fundList');
   fl.innerHTML='';
   var funds=FUNDS;
-  // Build all selected filters as a flat list - every single one must match (AND logic)
-  var allSelected=selF.categories.concat(selF.risk).concat(selF.pills);
-  if(allSelected.length>0){
+  var cats=selF.categories, risks=selF.risk, pills=selF.pills;
+  if(cats.length>0||risks.length>0||pills.length>0){
     funds=FUNDS.filter(function(f){
-      // Every selected filter must be satisfied
-      return allSelected.every(function(a){
-        return f.cat.toLowerCase()===a.toLowerCase() ||
-               f.sub.toLowerCase()===a.toLowerCase() ||
-               f.tags.some(function(t){return t.toLowerCase()===a.toLowerCase();});
-      });
+      // Categories: OR within group
+      var catOk=cats.length===0||cats.some(function(a){return f.cat.toLowerCase()===a.toLowerCase();});
+      // Risk: OR within group
+      var riskOk=risks.length===0||risks.some(function(a){return f.tags.some(function(t){return t.toLowerCase()===a.toLowerCase();});});
+      // Pills: AND each pill must match
+      var pillOk=pills.length===0||pills.every(function(a){return f.sub.toLowerCase()===a.toLowerCase()||f.tags.some(function(t){return t.toLowerCase()===a.toLowerCase();});});
+      // AND across groups
+      return catOk&&riskOk&&pillOk;
     });
   }
   if(!funds.length){fl.innerHTML='<div style="padding:30px;text-align:center;color:var(--text2);font-size:13px">No funds match the selected filters.</div>';return;}
@@ -574,7 +559,7 @@ function openDD(type){
     if(cbEl) cbEl.onclick=function(e){e.stopPropagation();toggleCB(opt,cbEl);};
     var badgeEl=document.getElementById('badge_'+opt.replace(/ /g,'_'));
     if(badgeEl){
-      var capturedOpt=opt, capturedSt=st, capturedExpl=expl;
+      var capturedOpt=opt,capturedSt=st,capturedExpl=expl;
       badgeEl.onclick=function(e){e.stopPropagation();showTtp(badgeEl,capturedOpt,capturedSt,capturedExpl);};
     }
   });
@@ -624,10 +609,10 @@ async function fetchTtp(opt,st){
   var key=opt+'-'+st;
   if(ttpCache[key]){document.getElementById('ttpBd').textContent=ttpCache[key];return;}
   try{
-   var tooltipPrompt='Explain in one sentence (max 25 words) why the "'+opt+'" mutual fund filter '+(st==='match'?'matches':st==='partial'?'partially matches':'does not match')+' a user with: horizon='+profile.horizon+', reaction='+profile.reaction+', goal='+profile.goal+', experience='+profile.experience+'. No advice, no return predictions.';
-var res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:tooltipPrompt})});
-var data=await res.json();
-var txt=data.text||'';
+    var tooltipPrompt='Explain in one sentence (max 25 words) why the "'+opt+'" mutual fund filter '+(st==='match'?'matches':st==='partial'?'partially matches':'does not match')+' a user with: horizon='+profile.horizon+', reaction='+profile.reaction+', goal='+profile.goal+', experience='+profile.experience+'. No advice, no return predictions.';
+    var res=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt:tooltipPrompt})});
+    var data=await res.json();
+    var txt=data.text||'';
     var bad=['you should','consider','invest in','recommend','will return','guaranteed'].some(function(t){return txt.toLowerCase().includes(t);});
     var wc=txt.split(/\s+/).length;
     var out=(!bad&&wc>=5&&wc<=40)?txt:'Your combined profile inputs were used to determine this match level.';
@@ -639,23 +624,12 @@ var txt=data.text||'';
 function hideTtp(){document.getElementById('ttp').classList.remove('show');}
 
 function testAgain(){
-  // Save current test case (already saved), reset profile and survey state
-  profile={};
-  curQ=1;
-  selF={categories:[],risk:[],pills:[]};
-  // Reset all survey steps - show q1, hide rest
-  for(var i=1;i<=9;i++){
-    var q=document.getElementById('q'+i);
-    if(q) q.classList[i===1?'add':'remove']('active');
-  }
-  // Reset all opt selections
+  profile={};curQ=1;selF={categories:[],risk:[],pills:[]};
+  for(var i=1;i<=9;i++){var q=document.getElementById('q'+i);if(q)q.classList[i===1?'add':'remove']('active');}
   document.querySelectorAll('.opt').forEach(function(o){o.classList.remove('selected');});
-  // Reset inputs
-  var bi=document.getElementById('budgetInput'); if(bi) bi.value='';
-  var ni=document.getElementById('notesInput'); if(ni) ni.value='';
-  var gi=document.getElementById('genderOtherInput'); if(gi) gi.value='';
-  var gw=document.getElementById('genderOtherWrap'); if(gw) gw.style.display='none';
-  // Reset nav buttons
+  var bi=document.getElementById('budgetInput');if(bi)bi.value='';
+  var gi=document.getElementById('genderOtherInput');if(gi)gi.value='';
+  var gw=document.getElementById('genderOtherWrap');if(gw)gw.style.display='none';
   document.getElementById('prevBtn').style.display='none';
   document.getElementById('nextBtn').disabled=true;
   document.getElementById('nextBtn').textContent='Continue';
